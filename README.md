@@ -2,7 +2,7 @@
 
 **사이트 바로가기: https://chan647.github.io/visual_slam_from_scratch/**
 
-좌표 변환부터 ORB-SLAM3까지, Visual SLAM을 처음부터 배우는 15강 강의노트다.
+좌표 변환부터 ORB-SLAM3까지, Visual SLAM을 처음부터 배우는 15강 강의노트임.
 
 - 파트 1 수학 기초: 강체 변환, 회전 표현, 리 군, 확률, 최적화
 - 파트 2 카메라 기하: 카메라 모델, 특징점, 에피폴라, PnP, 번들 조정

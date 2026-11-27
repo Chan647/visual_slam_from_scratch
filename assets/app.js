@@ -1,5 +1,5 @@
 /* 공용 스크립트: 강의 목록, 진도, 코드 복사, 연습문제 저장.
-   새 강의를 추가할 때는 LESSONS에서 open:true로 바꾸고 lessons/lesson-NN.html 파일을 만든다. */
+   새 강의를 추가할 때는 LESSONS에서 open:true로 바꾸고 lessons/lesson-NN.html 파일을 만듦. */
 window.SLAM = (() => {
   const LESSONS = [
     { n: 1, p: 1, t: "강체 변환과 좌표계", s: "강체 변환", d: "회전 행렬, 동차 좌표, T_wc 표기법과 역변환", open: true },
@@ -62,8 +62,8 @@ window.SLAM = (() => {
     const msg = document.getElementById("ansMsg");
     document.getElementById("copyAns").addEventListener("click", async () => {
       const txt = `${n}강 연습문제 답안\n\n` + exs.map((ex, i) => `${ex.querySelector("h4").textContent}\n${(ans[i] || "").trim() || "(모르겠음)"}`).join("\n\n");
-      try { await navigator.clipboard.writeText(txt); msg.textContent = "복사했다. 원하는 곳에 붙여 넣어 두자."; }
-      catch (e) { msg.textContent = "복사가 막혔다. 칸의 내용을 직접 선택해 복사하자."; }
+      try { await navigator.clipboard.writeText(txt); msg.textContent = "복사했음. 원하는 곳에 붙여 넣어 둘 것."; }
+      catch (e) { msg.textContent = "복사가 막혔음. 칸의 내용을 직접 선택해 복사할 것."; }
     });
     const chk = document.getElementById("doneChk");
     const d = done(); chk.checked = !!d[n];

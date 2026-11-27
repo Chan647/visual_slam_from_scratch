@@ -48,7 +48,7 @@
     g += `<circle cx="${X(pwx)}" cy="${Y(pwy)}" r="9" fill="#ffe600" stroke="var(--ink)" stroke-width="2"/>`;
     const right = X(pwx) > W - 130, tx = right ? X(pwx) - 14 : X(pwx) + 14;
     g += `<text x="${tx}" y="${Y(pwy) - 12}" text-anchor="${right ? "end" : "start"}">p (${f2(pwx)}, ${f2(pwy)})</text>`;
-    if (pwx < 0 || pwx > 5 || pwy < 0 || pwy > 4) g += `<text x="${W / 2}" y="20" text-anchor="middle" fill="var(--xr)">점이 그림 밖으로 나갔다</text>`;
+    if (pwx < 0 || pwx > 5 || pwy < 0 || pwy > 4) g += `<text x="${W / 2}" y="20" text-anchor="middle" fill="var(--xr)">점이 그림 밖으로 나갔음</text>`;
     s.innerHTML = g;
   };
   ids.forEach(i => el[i].addEventListener("input", draw));
