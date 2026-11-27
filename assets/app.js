@@ -62,8 +62,8 @@ window.SLAM = (() => {
     const msg = document.getElementById("ansMsg");
     document.getElementById("copyAns").addEventListener("click", async () => {
       const txt = `${n}강 연습문제 답안\n\n` + exs.map((ex, i) => `${ex.querySelector("h4").textContent}\n${(ans[i] || "").trim() || "(모르겠음)"}`).join("\n\n");
-      try { await navigator.clipboard.writeText(txt); msg.textContent = "복사했어요. 채팅에 붙여 넣어 보내 주세요."; }
-      catch (e) { msg.textContent = "복사가 막혔어요. 칸의 내용을 직접 선택해 복사해 주세요."; }
+      try { await navigator.clipboard.writeText(txt); msg.textContent = "복사했다. 원하는 곳에 붙여 넣어 두자."; }
+      catch (e) { msg.textContent = "복사가 막혔다. 칸의 내용을 직접 선택해 복사하자."; }
     });
     const chk = document.getElementById("doneChk");
     const d = done(); chk.checked = !!d[n];
