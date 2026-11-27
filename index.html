@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual SLAM 강의노트</title>
+<meta name="description" content="LiDAR SLAM 경험을 바탕으로 Visual SLAM을 처음부터 배우는 15강 강의노트">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-root="">
+<header class="top"><div class="top-in">
+  <a class="logo" href="index.html"><i></i>Visual SLAM 강의노트</a>
+  <nav class="menu" aria-label="주 메뉴"><a href="index.html" aria-current="page">홈</a><a href="#curriculum">커리큘럼</a><a href="#how">공부 방법</a><a href="lessons/lesson-01.html">1강부터 시작</a></nav>
+</div></header>
+
+<section class="band hero"><div class="in">
+  <div class="hero-row">
+    <div>
+      <h1>좌표 변환에서 ORB‑SLAM3까지, 15개 역</h1>
+      <p>LiDAR로 지도를 만들어 본 엔지니어가 카메라 기반 SLAM을 처음부터 쌓아 올리는 강의노트입니다. 수학 기초 다섯 강, 카메라 기하 다섯 강, SLAM 시스템 다섯 강을 순서대로 지나갑니다.</p>
+    </div>
+    <div class="stat"><b id="cnt">0 / 15</b><span id="cntTxt">완료한 강의</span><div class="meter"><div id="meter"></div></div></div>
+  </div>
+  <div class="route" id="route" role="img" aria-label="15개 강의를 세 파트로 나눈 노선도"><svg id="routeSvg"></svg></div>
+  <div class="legend"><span><i class="dot" style="background:var(--ink)"></i>완료</span><span><i class="dot" style="background:var(--yel)"></i>학습 중</span><span><i class="dot" style="background:var(--bg)"></i>예정</span></div>
+</div></section>
+
+<section class="band" id="curriculum"><div class="in">
+  <h2>커리큘럼</h2>
+  <p style="margin:0;color:var(--mute)">열린 강의만 들어갈 수 있어요. 연습문제 채점이 끝나면 다음 강의가 열립니다.</p>
+  <div id="parts"></div>
+</div></section>
+
+<section class="band" id="how" style="background:var(--soft)"><div class="in">
+  <h2>공부 방법</h2>
+  <div class="how">
+    <div><b>1. 읽고 움직여 보기</b>강의마다 직접 조작하는 그림이 하나씩 있습니다. 수식을 읽은 뒤 값을 바꿔 보면서 그림이 예상대로 움직이는지 확인하세요.</div>
+    <div><b>2. 손으로 풀기</b>예제를 종이에 직접 풀고, 숫자를 넣은 결과가 그림으로 봐도 말이 되는지 검산합니다.</div>
+    <div><b>3. 코드로 확인하기</b>강의의 numpy 코드를 복사해 돌려 보고, 값을 바꿔 가며 손 계산과 맞춰 봅니다.</div>
+    <div><b>4. 답안 보내기</b>연습문제 칸에 답을 적고 답안 전체 복사를 눌러 채팅에 보내면, 채점과 보충 설명 뒤에 다음 강의가 열립니다.</div>
+  </div>
+</div></section>
+
+<footer class="band foot"><div class="in"><span>Visual SLAM 강의노트 · 진도와 답안은 이 브라우저에만 저장됩니다.</span><span>참고 교재: 『Visual SLAM 14강』, Barfoot 『State Estimation for Robotics』</span></div></footer>
+
+<script src="assets/app.js"></script>
+<script>
+{
+const { LESSONS, PARTS, esc, href, status, label, done } = window.SLAM;
+const c = Object.values(done()).filter(Boolean).length;
+document.getElementById("cnt").textContent = c + " / 15";
+document.getElementById("meter").style.width = (c / 15 * 100) + "%";
+
+document.getElementById("parts").innerHTML = [1, 2, 3].map(p => {
+  const ls = LESSONS.filter(l => l.p === p);
+  return `<div class="part-h"><h3 style="margin:0;font-size:20px">파트 ${p} · ${esc(PARTS[p])}</h3><p>${ls[0].n}강 ~ ${ls[ls.length - 1].n}강</p></div><div class="cards">` +
+    ls.map(L => { const s = status(L); const tag = L.open ? "a" : "div";
+      return `<${tag} class="card ${s}"${L.open ? ` href="${href(L)}"` : ""}><span class="no">${L.n}강</span><span class="tt">${esc(L.t)}</span><span class="ds">${esc(L.d)}</span><span class="st">${label[s]}</span></${tag}>`; }).join("") + "</div>";
+}).join("");
+
+const svg = document.getElementById("routeSvg");
+const draw = () => {
+  const W = svg.clientWidth, H = svg.clientHeight, narrow = W < 640;
+  const mx = narrow ? 30 : 70, r = narrow ? 13 : 18;
+  const rows = [0.2, 0.52, 0.84].map(f => H * f);
+  const pts = LESSONS.map((L, i) => {
+    const row = Math.floor(i / 5), col = i % 5, k = row % 2 === 0 ? col : 4 - col;
+    return { L, x: mx + k * (W - 2 * mx) / 4, y: rows[row], row };
+  });
+  let g = "";
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    const on = status(a.L) !== "soon" && status(b.L) !== "soon";
+    const col = on ? "var(--ink)" : "var(--plane)";
+    let d;
+    if (a.row === b.row) d = `M${a.x} ${a.y} L${b.x} ${b.y}`;
+    else { const out = a.row % 2 === 0 ? 1 : -1, bx = a.x + out * (narrow ? 22 : 48); d = `M${a.x} ${a.y} C${bx} ${a.y} ${bx} ${b.y} ${b.x} ${b.y}`; }
+    g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${narrow ? 6 : 9}" stroke-linecap="round"/>`;
+  }
+  [1, 2, 3].forEach((p, row) => {
+    const x = row % 2 === 0 ? mx - r : W - mx + r, anc = row % 2 === 0 ? "start" : "end";
+    g += `<text x="${x}" y="${rows[row] - r - (narrow ? 12 : 18)}" text-anchor="${anc}" style="font-weight:700">파트 ${p} · ${esc(PARTS[p])}</text>`;
+  });
+  let here = pts.find(q => status(q.L) === "open");
+  for (const q of pts) {
+    const s = status(q.L);
+    const fill = s === "done" ? "var(--ink)" : s === "open" ? "#ffe600" : "var(--bg)";
+    const tc = s === "done" ? "var(--bg)" : s === "open" ? "#111" : "var(--mute)";
+    let node = `<circle cx="${q.x}" cy="${q.y}" r="${r}" fill="${fill}" stroke="${s === "soon" ? "var(--plane)" : "var(--ink)"}" stroke-width="3"/>` +
+      `<text x="${q.x}" y="${q.y + 4.5}" text-anchor="middle" style="stroke:none;fill:${tc};font-weight:700">${q.L.n}</text>`;
+    if (!narrow) node += `<text x="${q.x}" y="${q.y + r + 20}" text-anchor="middle" style="fill:${s === "soon" ? "var(--mute)" : "var(--ink)"}">${esc(q.L.s)}</text>`;
+    g += q.L.open ? `<a href="${href(q.L)}" aria-label="${q.L.n}강 ${esc(q.L.t)}">${node}</a>` : node;
+  }
+  if (here) g = `<circle cx="${here.x}" cy="${here.y}" r="${r + 8}" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 4"/>` + g;
+  svg.innerHTML = g;
+};
+const roRoute = new ResizeObserver(draw);
+roRoute.observe(svg);
+draw();
+}
+</script>
+</body>
+</html>

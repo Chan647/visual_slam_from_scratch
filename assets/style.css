@@ -1,0 +1,121 @@
+/* VOICE everyday study, calm and exact, an engineer's course notebook
+   IDEA a printed robotics course: a route map of 15 stations, numbered handouts, ruled matrices
+   PICTURE home: the course drawn as a transit line through three parts; lessons: one live figure each
+   COLOUR white ground, black ink, concrete #d8d8d4 planes, safety yellow #ffe600 only on "you are here", rviz red/green on axes
+   TYPE Hanken Grotesk + Noto Sans KR for text, JetBrains Mono for math and code
+   LAYOUT top bar on every page; home: title band, route map full width, part sections; lesson: article + sticky contents rail */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#1a1a19);--ink:light-dark(#111111,#ecebe8);--mute:light-dark(#5d5d58,#a7a6a1);--plane:light-dark(#d8d8d4,#2c2c2a);--soft:light-dark(#f2f2f0,#222221);--line:light-dark(#cfcfca,#3a3a37);--yel:#ffe600;--xr:light-dark(#d23a2a,#ff6b5a);--yg:light-dark(#1f9a4a,#4fd07e);--blue:light-dark(#1f5fd1,#7aa7ff)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:80px}
+body{margin:0;word-break:keep-all;background:var(--bg);color:var(--ink);font:16px/1.65 "Hanken Grotesk","Noto Sans KR",system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}
+img{max-width:100%}
+.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:0 max(4vw,16px);min-height:60px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:18px;letter-spacing:-.02em;text-decoration:none;display:flex;align-items:center;gap:10px}
+.logo i{width:14px;height:14px;border-radius:50%;background:var(--yel);border:2px solid var(--ink);display:inline-block}
+.menu{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.menu a{text-decoration:none;font-size:15px;padding:8px 12px;border-radius:8px;min-height:40px;display:flex;align-items:center}
+.menu a:hover{background:var(--soft)}
+.menu a[aria-current=page]{background:var(--ink);color:var(--bg)}
+.band{padding:clamp(28px,4vw,56px) max(4vw,16px)}
+.in{max-width:1240px;margin:0 auto}
+.hero{background:var(--plane)}
+.hero h1{font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance;max-width:18ch}
+.hero p{font-size:17px;max-width:62ch;margin:0}
+.hero-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end}
+.stat{background:var(--bg);border-radius:12px;padding:14px 18px;min-width:220px}
+.stat b{font-size:34px;line-height:1;font-family:"JetBrains Mono",monospace}
+.stat span{display:block;font-size:14px;color:var(--mute);margin-top:6px}
+.meter{height:8px;background:var(--plane);border-radius:4px;overflow:hidden;margin-top:10px}
+.meter div{height:100%;background:var(--ink);width:0}
+.route{position:relative;height:clamp(300px,34vw,400px);margin-top:28px;background:var(--bg);border-radius:14px;border:1px solid var(--line)}
+.route>svg{position:absolute;inset:0;width:100%;height:100%}
+svg text{paint-order:stroke;stroke:var(--bg);stroke-width:4px;font-family:"Hanken Grotesk","Noto Sans KR",sans-serif;font-size:13px;fill:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:18px;font-size:14px;color:var(--mute);margin-top:10px}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);display:inline-block}
+h2{font-size:28px;line-height:1.2;letter-spacing:-.01em;margin:0 0 6px}
+.part-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-top:2px solid var(--ink);padding-top:16px;margin-top:36px}
+.part-h p{margin:0;color:var(--mute)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
+.card{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;min-height:150px;background:var(--bg)}
+a.card:hover{border-color:var(--ink)}
+.card .no{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--mute)}
+.card .tt{font-size:17px;font-weight:700;line-height:1.3}
+.card .ds{font-size:14px;color:var(--mute);line-height:1.5}
+.card .st{margin-top:auto;font-size:13px;align-self:flex-start;padding:2px 9px;border-radius:10px;border:1px solid var(--line)}
+.card.open .st{background:var(--yel);color:#111;border-color:#111}
+.card.done .st{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card.soon{background:var(--soft)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:14px}
+.how div{border-top:1px solid var(--line);padding-top:12px}
+.how b{display:block;font-size:16px;margin-bottom:4px}
+.foot{border-top:1px solid var(--line);font-size:14px;color:var(--mute)}
+.foot .in{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.doc{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:48px;padding:32px max(4vw,16px) 64px}
+.crumb{font-size:14px;color:var(--mute);margin:0 0 6px}
+.crumb a{text-decoration:none}
+.doc h1{font-size:clamp(32px,4.4vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+.lede{font-size:17px;max-width:68ch;margin:0 0 26px}
+article h2{font-size:26px;margin:48px 0 12px;padding-top:18px;border-top:2px solid var(--ink)}
+article h3{font-size:19px;margin:28px 0 8px}
+article p,article li{max-width:70ch}
+.toc{position:sticky;top:84px;align-self:start;font-size:14px}
+.toc b{display:block;margin-bottom:8px}
+.toc a{display:block;text-decoration:none;color:var(--mute);padding:5px 0 5px 10px;border-left:2px solid var(--line)}
+.toc a:hover{color:var(--ink);border-left-color:var(--ink)}
+.lab{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;margin:0 0 8px}
+.fig{position:relative;min-height:400px;background:var(--soft);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.fig svg text{stroke:var(--soft);font-family:"JetBrains Mono",monospace}
+.panel{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;font-weight:500}
+.ctl output{font-family:"JetBrains Mono",monospace;font-size:13px}
+input[type=range]{width:100%;height:32px;accent-color:var(--ink)}
+.res{background:var(--ink);color:var(--bg);border-radius:10px;padding:12px 14px}
+.res b{display:block;font-size:13px;font-weight:500;opacity:.75}
+.res .big{font-family:"JetBrains Mono",monospace;font-size:clamp(20px,2.4vw,26px);white-space:nowrap}
+.res .big i{font-style:normal;background:var(--yel);color:#111;padding:0 6px;border-radius:4px}
+.mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));gap:10px}
+.mat{font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.5;white-space:pre;overflow-x:auto;padding:8px 10px;background:var(--soft);border-radius:8px}
+.mat em{font-style:normal;color:var(--mute);display:block}
+.cap{font-size:14px;color:var(--mute);margin:6px 0 0}
+.btn{font:inherit;font-size:14px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--ink);background:var(--bg);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--ink);color:var(--bg)}
+.btn:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+pre{position:relative;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font:13.5px/1.6 "JetBrains Mono",monospace;overflow-x:auto;margin:12px 0}
+code{font-family:"JetBrains Mono",monospace;font-size:.92em;background:var(--soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+pre code{background:none;padding:0;overflow-wrap:normal}
+.copy{position:absolute;top:8px;right:8px;min-height:32px;font-size:13px;padding:0 10px}
+.note{border-left:4px solid var(--ink);background:var(--soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0}
+.note b{display:block;margin-bottom:2px}
+.warn{border-left-color:var(--xr)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:12px 0}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--mute);font-weight:500;border-bottom:2px solid var(--ink)}
+.sum{counter-reset:s;list-style:none;padding:0}
+.sum li{counter-increment:s;padding:10px 0 10px 2.4em;border-bottom:1px solid var(--line);position:relative}
+.sum li::before{content:counter(s);position:absolute;left:0;top:10px;width:1.7em;height:1.7em;border-radius:50%;background:var(--ink);color:var(--bg);font-size:13px;display:grid;place-items:center}
+.ex{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.ex h4{margin:0 0 6px;font-size:16px}
+.ex label{font-size:14px;color:var(--mute)}
+.ex textarea{width:100%;min-height:96px;font:16px/1.5 "Hanken Grotesk","Noto Sans KR",sans-serif;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px}
+.flash{font-size:14px;color:var(--mute)}
+.done{display:flex;gap:10px;align-items:center;font-size:15px;min-height:44px}
+.done input{width:22px;height:22px;accent-color:var(--ink)}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:48px}
+.pn a,.pn span{border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none;font-size:15px}
+.pn a:hover{border-color:var(--ink)}
+.pn small{display:block;color:var(--mute);font-size:13px}
+.pn .nx{text-align:right}
+.pn span{color:var(--mute);background:var(--soft)}
+@media(max-width:1060px){.doc{grid-template-columns:minmax(0,1fr)}.toc{display:none}.lab{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){.hero-row{grid-template-columns:minmax(0,1fr)}.stat{min-width:0}.menu{margin-left:0;width:100%;padding-bottom:8px}.fig{min-height:320px}.pn{grid-template-columns:1fr}}
+@media(max-width:600px){table{font-size:13px}th,td{padding:6px 4px}}
+@media(prefers-reduced-motion:no-preference){.meter div{transition:width .5s ease}}

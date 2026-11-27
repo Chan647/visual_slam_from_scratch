@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1강 강체 변환 · Visual SLAM 강의노트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="../">
+<header class="top"><div class="top-in">
+  <a class="logo" href="../index.html"><i></i>Visual SLAM 강의노트</a>
+  <nav class="menu" aria-label="주 메뉴"><a href="../index.html">홈</a><a href="../index.html#curriculum">커리큘럼</a><a href="../index.html#how">공부 방법</a><a href="lesson-01.html" aria-current="page">1강</a></nav>
+</div></header>
+
+<div class="doc">
+<article>
+  <p class="crumb"><a href="../index.html#curriculum">커리큘럼</a> › 파트 1 · 수학 기초 › 1강</p>
+  <h1>강체 변환과 좌표계</h1>
+  <p class="lede">SLAM이 하는 일을 한 문장으로 줄이면 로봇이 지금 어디에 있고 어느 쪽을 보는지, 즉 pose를 계속 추정하는 것입니다. pose는 회전과 이동으로 이루어지고, 둘을 합친 것이 강체 변환입니다. 뒤에 나올 PnP, 번들 조정, 포즈 그래프가 모두 이 변환을 추정하는 문제입니다.</p>
+
+  <div class="lab">
+    <div class="fig" role="img" aria-label="map, base_link, camera 좌표계와 점 p의 변환을 보여주는 그림"><svg id="svg1"></svg></div>
+    <div class="panel">
+      <div class="res"><b>월드(map)에서 본 점 p</b><span class="big" id="pw"></span></div>
+      <div class="ctl"><label for="rx">로봇 x <output id="rxo"></output></label><input type="range" id="rx" min="0" max="4.5" step="0.1" value="2"></div>
+      <div class="ctl"><label for="ry">로봇 y <output id="ryo"></output></label><input type="range" id="ry" min="0" max="3.5" step="0.1" value="1"></div>
+      <div class="ctl"><label for="yaw">로봇 yaw <output id="yawo"></output></label><input type="range" id="yaw" min="-180" max="180" step="5" value="90"></div>
+      <div class="ctl"><label for="off">카메라 장착 위치 (로봇 앞) <output id="offo"></output></label><input type="range" id="off" min="0" max="1" step="0.05" value="0.5"></div>
+      <div class="ctl"><label for="dist">카메라가 본 점까지 거리 <output id="disto"></output></label><input type="range" id="dist" min="0.2" max="2" step="0.1" value="1"></div>
+      <button class="btn" id="reset1" type="button">예제 값으로 되돌리기</button>
+    </div>
+  </div>
+  <div class="mats" id="mats"></div>
+  <p class="cap">슬라이더를 움직이면 그림과 행렬이 함께 바뀝니다. 처음 값은 6절의 예제와 같습니다. 축 색은 rviz와 같게 x 빨강, y 초록입니다.</p>
+
+  <h2>1. 왜 이걸 제일 먼저 배우나</h2>
+  <p>pose는 두 가지로 이루어집니다.</p>
+  <ul><li><b>회전(rotation)</b>: 어느 방향을 보고 있는가</li><li><b>이동(translation)</b>: 어디에 있는가</li></ul>
+  <p>사실 매일 쓰고 있는 개념입니다. ROS의 <code>tf</code> 트리 <code>map → odom → base_link → laser</code>의 화살표 하나하나가 강체 변환입니다. 이번 강의는 그걸 수식으로 정확히 이해하는 시간입니다.</p>
+
+  <h2>2. 좌표계(frame)</h2>
+  <p>같은 점도 어느 좌표계에서 보느냐에 따라 좌표값이 달라집니다. 로봇 바로 앞 1m에 컵이 있으면, 로봇 좌표계에서는 <code>(1, 0, 0)</code>이지만 월드 좌표계에서는 로봇이 서 있는 위치와 방향에 따라 <code>(5, 3, 0)</code>일 수도 <code>(-2, 7, 0)</code>일 수도 있습니다.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>좌표계</th><th>의미</th><th>ROS에서</th></tr></thead>
+    <tbody><tr><td>World (w)</td><td>고정된 기준</td><td><code>map</code></td></tr><tr><td>Body (b)</td><td>로봇 몸체</td><td><code>base_link</code></td></tr><tr><td>Camera (c)</td><td>카메라</td><td><code>camera_link</code>, <code>camera_optical_frame</code></td></tr></tbody>
+  </table></div>
+  <div class="note warn"><b>자주 걸리는 함정: 카메라 광학 좌표계</b>ROS 로봇 몸체는 x 앞, y 왼쪽, z 위입니다. 카메라의 optical frame은 z 앞, x 오른쪽, y 아래입니다. Visual SLAM 코드는 거의 다 optical frame 기준이라 처음에 여기서 많이 헷갈립니다. 6강에서 다시 다룹니다.</div>
+
+  <h2>3. 회전 행렬</h2>
+  <h3>2D부터</h3>
+  <p>평면에서 θ만큼 회전시키는 행렬입니다.</p>
+<pre><code>R(θ) = [ cosθ  -sinθ ]
+       [ sinθ   cosθ ]</code></pre>
+  <p>점 <code>(1, 0)</code>을 90° 돌리면 cos90° = 0, sin90° = 1이므로 아래처럼 <code>(0, 1)</code>이 됩니다. x축 위의 점이 y축으로 돌아갔으니 맞습니다.</p>
+<pre><code>[ 0  -1 ] [1]   [0]
+[ 1   0 ] [0] = [1]</code></pre>
+  <h3>3D에서: 열이 곧 축이다</h3>
+  <div class="note"><b>가장 중요한 해석</b>회전 행렬의 각 열은 회전된 좌표계의 x, y, z축을 원래 좌표계에서 본 방향 벡터입니다. R<sub>wb</sub>의 첫 번째 열은 로봇의 앞 방향이 월드에서 어디를 가리키는지입니다.</div>
+  <p>위 그림의 T<sub>wb</sub> 행렬에서 왼쪽 위 2×2의 첫 열을 보세요. yaw를 바꾸면 그 열이 로봇의 빨간 x축 방향과 똑같이 움직입니다.</p>
+  <h3>성질</h3>
+  <ol>
+    <li><b>RᵀR = I</b> (직교 행렬). 그래서 역행렬이 그냥 전치 Rᵀ이고, 계산이 아주 쌉니다.</li>
+    <li><b>det(R) = +1</b>. -1이면 회전이 아니라 거울 반사입니다.</li>
+    <li>이 두 조건을 만족하는 행렬의 집합을 <b>SO(3)</b>(Special Orthogonal group)라고 합니다. 3강에서 다시 나옵니다.</li>
+  </ol>
+  <h3>회전은 순서가 중요하다</h3>
+  <p>책 한 권을 들고 해보세요. x축으로 90° 돌린 뒤 z축으로 90° 돌린 결과와, z축 먼저 돌린 뒤 x축으로 돌린 결과가 다릅니다. 행렬로 쓰면 <code>Rz·Rx ≠ Rx·Rz</code>입니다. 코드에서 곱하는 순서를 틀리면 에러 없이 조용히 틀린 값만 나옵니다.</p>
+
+  <h2>4. 점 변환 공식과 표기법</h2>
+  <p>카메라 좌표계의 점 p<sub>c</sub>를 월드 좌표계로 옮기는 공식입니다.</p>
+<pre><code>p_w = R_wc · p_c + t_wc</code></pre>
+  <div class="note"><b>표기 규칙 (Visual SLAM 14강, ORB-SLAM과 같음)</b>T<sub>wc</sub>는 c 좌표계의 좌표를 w 좌표계의 좌표로 바꾸는 변환입니다. 아래첨자를 오른쪽에서 왼쪽으로, c → w로 읽습니다. t<sub>wc</sub>는 월드에서 본 카메라의 위치이기도 합니다. 카메라 원점 (0,0,0)을 넣으면 p<sub>w</sub> = t<sub>wc</sub>가 나오기 때문입니다.</div>
+  <p>이 표기를 쓰면 변환을 이어 붙일 때 안쪽 첨자가 맞물려 사라지므로, 순서를 틀릴 일이 줄어듭니다.</p>
+<pre><code>T_wc = T_wb · T_bc     (안쪽 첨자 b끼리 맞물림)</code></pre>
+
+  <h2>5. 동차 좌표</h2>
+  <p><code>R·p + t</code>는 곱셈 뒤에 덧셈이 붙어서, 여러 번 이어 붙이면 식이 금방 지저분해집니다.</p>
+<pre><code>p_w = R_wb (R_bc p_c + t_bc) + t_wb</code></pre>
+  <p>그래서 점 뒤에 1을 붙여 차원을 하나 늘리고, 회전과 이동을 4×4 행렬 하나로 묶습니다. 이제 변환을 이어 붙이는 것이 그냥 행렬 곱셈입니다. 이런 4×4 행렬의 집합이 <b>SE(3)</b>(Special Euclidean group)입니다.</p>
+<pre><code>T = [ R   t ]      p̃ = [ p ]      T·p̃ = [ R·p + t ]
+    [ 0ᵀ  1 ]          [ 1 ]             [    1    ]</code></pre>
+  <h3>역변환</h3>
+<pre><code>T⁻¹ = [ Rᵀ   -Rᵀ·t ]
+      [ 0ᵀ     1   ]</code></pre>
+  <p>T<sub>wc</sub>를 알면 T<sub>cw</sub> = T<sub>wc</sub>⁻¹이고, 이걸로 맵의 3D 점을 카메라 좌표로 가져옵니다. 6강에서 점을 이미지에 투영할 때 씁니다.</p>
+  <div class="note warn"><b>여기서 많이 틀립니다</b>역변환의 이동 부분은 -t가 아니라 -Rᵀ·t입니다.</div>
+
+  <h2>6. 손으로 풀어보는 예제</h2>
+  <p><b>상황</b>: 로봇이 월드 좌표 (2, 1)에 서서 yaw 90°로 +y 방향을 봅니다. 카메라는 로봇 앞 0.5m에 같은 방향으로 달려 있습니다(optical frame은 일단 무시하고 x가 앞이라고 하겠습니다). 카메라가 정면 1m에 장애물을 봤습니다. p<sub>c</sub> = (1, 0, 0). 장애물의 월드 좌표는?</p>
+  <p><b>1단계, 카메라 → 로봇</b>: R<sub>bc</sub> = I, t<sub>bc</sub> = (0.5, 0, 0)이므로 p<sub>b</sub> = (1, 0, 0) + (0.5, 0, 0) = (1.5, 0, 0)</p>
+  <p><b>2단계, 로봇 → 월드</b>: R<sub>wb</sub> = R(90°), t<sub>wb</sub> = (2, 1, 0)</p>
+<pre><code>R(90°)·(1.5, 0) = (0·1.5 − 1·0,  1·1.5 + 0·0) = (0, 1.5)
+p_w = (0, 1.5) + (2, 1) = (2, 2.5)</code></pre>
+  <p><b>검산</b>: 로봇이 (2, 1)에서 +y를 보고 있고 장애물이 정면 1.5m에 있으니 (2, 2.5)가 맞습니다. 위 그림의 처음 값이 이 예제입니다. 숫자를 넣고 그림으로 봐도 말이 되는지 확인하는 습관이 SLAM 디버깅의 절반입니다.</p>
+
+  <h2>7. 코드로 확인하기</h2>
+<pre><code>import numpy as np
+
+def T_from(yaw_deg, tx, ty):
+    th = np.deg2rad(yaw_deg)
+    T = np.eye(3)                      # 2D 동차 변환 (3x3)
+    T[:2, :2] = [[np.cos(th), -np.sin(th)],
+                 [np.sin(th),  np.cos(th)]]
+    T[:2, 2] = [tx, ty]
+    return T
+
+T_wb = T_from(90, 2, 1)
+T_bc = T_from(0, 0.5, 0)
+T_wc = T_wb @ T_bc                     # 첨자 b가 맞물림
+
+p_c = np.array([1, 0, 1])              # 동차 좌표 (끝에 1)
+print(T_wc @ p_c)                      # → [2.  2.5 1. ]</code></pre>
+
+  <h2>8. 핵심 정리</h2>
+  <ol class="sum">
+    <li>pose = 회전 + 이동 = 강체 변환</li>
+    <li>회전 행렬의 열은 회전된 축의 방향이고, 역행렬은 전치다. 집합 이름은 SO(3)</li>
+    <li>회전은 순서가 중요하다. 교환법칙이 성립하지 않는다</li>
+    <li>T<sub>wc</sub>는 c → w. 첨자를 오른쪽에서 왼쪽으로 읽고, 이어 붙일 때 안쪽 첨자가 맞물린다</li>
+    <li>동차 좌표를 쓰면 변환 연쇄가 행렬 곱 하나로 끝난다. 집합 이름은 SE(3)</li>
+    <li>역변환의 이동 부분은 -Rᵀt</li>
+  </ol>
+  <p><b>다음 강 예고</b>: 회전 행렬은 숫자가 9개인데 실제 자유도는 3개뿐이라 최적화 변수로 쓰기 불편합니다. 이 문제를 어떻게 푸는지가 2강(쿼터니언)과 3강(리 대수)의 주제입니다.</p>
+
+  <h2>연습문제</h2>
+  <p>답을 아래 칸에 적고 <b>답안 전체 복사</b>를 눌러 채팅에 붙여 보내 주세요. 채점과 보충 설명 뒤에 2강이 열립니다. 적은 답은 이 브라우저에 저장됩니다.</p>
+  <div class="ex"><h4>문제 1 · 개념</h4><p>회전 행렬의 역행렬이 왜 전치행렬과 같은지, 열이 회전된 축의 방향이라는 해석으로 직관적으로 설명해 보세요. 힌트: 서로 수직인 단위벡터끼리 내적하면 몇일까요?</p><label for="a1">내 답</label><textarea id="a1"></textarea></div>
+  <div class="ex"><h4>문제 2 · 계산</h4><p>예제의 로봇 pose(위치 (2, 1), yaw 90°)에서 월드 좌표 (3, 1)의 점은 로봇 좌표계로 어디일까요? T<sub>bw</sub> = T<sub>wb</sub>⁻¹ 공식으로 구하고, 그림으로도 맞는지 확인해 보세요.</p><label for="a2">내 답</label><textarea id="a2"></textarea></div>
+  <div class="ex"><h4>문제 3 · ROS 연결</h4><p>T<sub>map_odom</sub>과 T<sub>odom_base</sub>를 알 때 T<sub>map_base</sub>는 어떻게 구하나요? 그리고 AMCL이나 slam_toolbox가 map → base_link가 아니라 map → odom을 퍼블리시하는 이유를 아는 대로 설명해 보세요.</p><label for="a3">내 답</label><textarea id="a3"></textarea></div>
+  <div class="ex"><h4>문제 4 · 함정</h4><p>누군가 T<sub>wc</sub>의 역변환을 [Rᵀ, -t; 0, 1]로 구현했습니다. 이 코드가 우연히 맞는 결과를 내는 경우와 틀리는 경우는 각각 언제일까요?</p><label for="a4">내 답</label><textarea id="a4"></textarea></div>
+  <div class="bar"><button class="btn pri" id="copyAns" type="button">답안 전체 복사</button><label class="done"><input type="checkbox" id="doneChk"> 이 강의 완료로 표시</label><span class="flash" id="ansMsg"></span></div>
+
+  <nav class="pn" id="pn" aria-label="이전 다음 강의"></nav>
+</article>
+<aside class="toc" id="toc" aria-label="목차"></aside>
+</div>
+
+<footer class="band foot"><div class="in"><span>Visual SLAM 강의노트 · 진도와 답안은 이 브라우저에만 저장됩니다.</span><a href="../index.html">홈으로</a></div></footer>
+
+<script src="../assets/app.js"></script>
+<script src="../assets/lesson-01.js"></script>
+<script>{ window.SLAM.lessonPage(1); }</script>
+</body>
+</html>
